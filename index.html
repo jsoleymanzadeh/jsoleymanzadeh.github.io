@@ -9,15 +9,53 @@
 		.hidden {
 			opacity: 0.001;
 		}
+
+		.project {
+			display: none;
+		}
 	</style>
 </head>
 <body>
 	<div class="container">
-		<div class="jumbotron fluid-jumbotron">
+		<nav></nav>
+		<header>
 			<h1><span class="invisible intro">Hello.</span><span class="invisible intro"> I'm Jasper.</span>
 				<br>
 				<span class="invisible intro"> Welcome to my portfolio.</span></h1>
-		</div>
+		</header>
+		<section class="hidden">
+			<div class="jumbotron fluid-jumbotron project">
+				<h3><a href="weather_map.html" target="_blank">Weather Map</a></h3>
+				<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ad asperiores beatae dolorem, est facere
+					harum illum mollitia perspiciatis quasi quibusdam reiciendis, rerum sint. Beatae ex expedita fugit
+					id molestiae quasi.</p>
+			</div>
+			<div class="jumbotron fluid-jumbotron project">
+				<h3><a href="mapbox_maps_api.html" target="_blank">Restaurant Map</a></h3>
+				<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deserunt dolorem ducimus, impedit ipsa
+					ipsum libero magnam modi officiis quis quisquam, tenetur, ut voluptatem! Accusamus accusantium,
+					consectetur quasi quo sapiente tempore!</p>
+			</div>
+			<div class="jumbotron fluid-jumbotron project">
+				<h3><a href="coffee.html" target="_blank">Coffee Page</a></h3>
+				<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquam atque beatae eveniet expedita illum
+					labore magnam minima nihil, non odio quo rem reprehenderit sapiente, sed sequi temporibus tenetur
+					voluptas voluptate!</p>
+			</div>
+		</section>
+		<section class="hidden">
+			<h2>Contact Info</h2>
+			<dl>
+				<dt>Email</dt>
+				<dd><a href="mailto:jaspersoleymanzadeh@gmail.com">jaspersoleymanzadeh@gmail.com</a></dd>
+				<dt>Phone</dt>
+				<dd><a href="tel:+15105652330">+1 (510) 565-2330</a></dd>
+				<dt>GitHub</dt>
+				<dd><a href="https://github.com/jsoleymanzadeh" target="_blank">@jsoleymanzadeh</a></dd>
+				<dt>LinkedIn</dt>
+				<dd><a href="https://www.linkedin.com/in/jsoleymanzadeh/" target="_blank">LinkedIn</a></dd>
+			</dl>
+		</section>
 	</div>
 	<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF" crossorigin="anonymous"></script>
@@ -26,10 +64,16 @@
 		$(document).ready(function () {
 			$(".intro").each(function (i) {
 				$(this).removeClass("invisible").addClass("hidden");
-				$(this).delay(i * 2000).fadeTo(2000, 1);
+				$(this).delay(i * 1500).fadeTo(1500, 1);
 			});
 			$(".intro").promise().done(function () {
 				console.log("done");
+				$("section").each(function() {
+					$(this).fadeTo(500, 1)
+				})
+				$(".project").each(function (i) {
+					$(this).slideDown(1000);
+				});
 			});
 		});
 	</script>

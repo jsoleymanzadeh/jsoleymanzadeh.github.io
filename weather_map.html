@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>Weather Map Project</title>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
+	<script src='https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.js'></script>
+	<link href='https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css' rel='stylesheet'/>
+	<style>
+		.container {
+			background-color: rgba(0, 0, 0, 0.3);
+		}
+
+		.btn {
+			/*margin: 0.2em;*/
+		}
+
+		#userInput {
+			width: 85%;
+		}
+
+		#historyDropdown, #searchButton {
+			/*margin: 0;*/
+		}
+
+		#bookmarks > .btn, #history > .btn {
+			/*margin: 0;*/
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<div class="row mb-1">
+			<div class="input-group">
+				<div class="input-group-prepend">
+					<button class="btn btn-primary dropdown-toggle" id="historyDropdown" data-toggle="dropdown">
+						History
+					</button>
+					<div class="dropdown-menu" id="history"></div>
+				</div>
+				<input class="" type="text" id="userInput" placeholder="City/Region">
+				<div class="input-group-append">
+					<button class="btn btn-primary" id="searchButton">Search</button>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col text-left">
+				<button class="btn btn-light" id="setHome">Set Home</button>
+				<button class="btn btn-light" id="addBookmark">Add Bookmark</button>
+			</div>
+			<div class="col text-right">
+				<button class="btn btn-success" id="goHome">Home</button>
+				<button class="btn btn-light dropdown-toggle disabled" id="bookmarksDropdown" data-toggle="dropdown">
+					Bookmarks
+				</button>
+				<div class="dropdown-menu" id="bookmarks"></div>
+				<button class="btn btn-danger disabled" id="deleteBookmarks">Delete Bookmarks</button>
+			</div>
+		</div>
+		<div class="row">
+			<div class="text-white col text-left">Current Location: <span id="current"></span></div>
+			<div class="text-white col text-right">Home Location: <span id="home"></span></div>
+		</div>
+		<section id="forecast" class="row"></section>
+		<div class="mt-3" id='map' style='width: 100%; height: 300px;'></div>
+	</div>
+	<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF" crossorigin="anonymous"></script>
+	<script src="https://code.jquery.com/jquery-2.2.4.js" integrity="sha256-iT6Q9iMJYuQiMWNd9lDyBUStIq/8PuOW33aOqmvFpqI=" crossorigin="anonymous"></script>
+	<script src="js/mapbox-geocoder-utils.js"></script>
+	<script src="js/keys.js"></script>
+	<script>
+		"use strict";
+		$(document).ready(function () {
+			// find the date for the forecast
+			function findDate(timestamp) {
+				let date = new Date(timestamp * 1000);
+				return date.toDateString();
+			}
+
+			// draw the forecast data in HTML
+			function drawForecast(data) {
+				let forecastSection = $("#forecast");
+				forecastSection.html("");
+				$("body").css("background", 'url("img/' + data.current.weather[0].icon + '.jpeg")');
+				let fiveDays = [];
+				for (let i = 0; i < 5; i++) {
+					fiveDays.push(data.daily[i]);
+					let column = document.createElement("div");
+					column.setAttribute("class", "col");
+					column.setAttribute("id", "column" + i);
+					forecastSection.append(column);
+					let card = document.createElement("div");
+					card.setAttribute("class", "card");
+					card.setAttribute("id", "day" + i);
+					$("#column" + i).append(card);
+					let cardBody = document.createElement("ul");
+					cardBody.setAttribute("class", "list-group list-group-flush");
+					$("#day" + i).append(cardBody);
+				}
+				fiveDays.forEach(function (forecast, index) {
+					let dayList = $("#day" + index + " > .list-group");
+					let forecastDate = forecast.dt;
+					let dateHeader = document.createElement("div");
+					dateHeader.setAttribute("class", "card-header");
+					dateHeader.innerText = findDate(forecastDate);
+					$("#day" + index).prepend(dateHeader);
+					let dailyTemp = document.createElement("li");
+					dailyTemp.setAttribute("class", "list-group-item");
+					dailyTemp.innerHTML = Math.floor(forecast.temp.min) + "&#8457;" + " / " + Math.floor(forecast.temp.max) + "&#8457;";
+					dayList.append(dailyTemp);
+					let weatherIcon = document.createElement("img");
+					weatherIcon.setAttribute("src", "https://openweathermap.org/img/wn/" + forecast.weather[0].icon + ".png");
+					weatherIcon.setAttribute("style", "height: 50px; width: 50px");
+					weatherIcon.setAttribute("class", "mx-auto");
+					dayList.append(weatherIcon);
+					let dayDescription = document.createElement("li");
+					dayDescription.setAttribute("class", "list-group-item text-center");
+					dayDescription.innerHTML = forecast.weather[0].description;
+					dayList.append(dayDescription);
+					let dailyHumidity = document.createElement("li");
+					dailyHumidity.setAttribute("class", "list-group-item");
+					dailyHumidity.innerHTML = "Humidity: " + forecast.humidity;
+					dayList.append(dailyHumidity);
+					let dailyWind = document.createElement("li");
+					dailyWind.setAttribute("class", "list-group-item");
+					dailyWind.innerHTML = "Wind Speed: " + forecast.wind_speed;
+					dayList.append(dailyWind);
+					let dailyPressure = document.createElement("li");
+					dailyPressure.setAttribute("class", "list-group-item");
+					dailyPressure.innerHTML = "Pressure: " + forecast.pressure;
+					dayList.append(dailyPressure);
+				});
+			}
+
+			// use OpenWeatherMap to find weather data of a location given by coordinates and insert to HTML, then draw the history HTML
+			function getWeatherFromCoord(place) {
+				$.get("https://api.openweathermap.org/data/2.5/onecall", {
+					appid: WEATHER_MAP_OPEN_WEATHER_APPID,
+					lon: place[0],
+					lat: place[1],
+					units: "imperial"
+				}).done(function (data) {
+					locationForecastsArray.push(data);
+					drawHistory();
+					drawForecast(data);
+					userInput.val("");
+				});
+			}
+
+			// make sure the user typed something in the input box and alert them if they did not
+			function checkUserInput() {
+				if (!userInput.val()) {
+					alert("Please input a location.");
+				} else {
+					getWeather(userInput.val());
+				}
+			}
+
+			// find weather at coordinates given in an object with OpenWeatherMap and place marker on Mapbox map
+			function getWeatherFromObject(data) {
+				coordinates = [data.features[0].center[0], data.features[0].center[1]];
+				locationName = data.features[0].place_name;
+				locationNamesArray.push(locationName);
+				currentLocationSpan.text(locationName);
+				getWeatherFromCoord(coordinates);
+				map.flyTo({center: coordinates});
+				let marker = new mapboxgl.Marker().setLngLat(coordinates).addTo(map);
+				let popup = new mapboxgl.Popup().setHTML("<dt>" + locationName + "</dt><dd>Lat: " + coordinates[1].toFixed(3) + "<br>Long: " + coordinates[0].toFixed(3) + "</dd>");
+				marker.setPopup(popup);
+				marker.getElement().setAttribute("data-index", locationForecastsArray.length);
+				addMarkerListener(marker);
+			}
+
+			// translate user's input into coordinates with Mapbox and get weather for location
+			function getWeather(place) {
+				geocode(place, mapboxgl.accessToken).then(function (result) {
+					coordinates = [result.features[0].center[0], result.features[0].center[1]];
+					locationName = result.features[0].place_name;
+					if (locationNamesArray.includes(locationName)) {
+						drawForecast(locationForecastsArray[locationNamesArray.indexOf(locationName)]);
+						currentLocationSpan.text(locationName);
+						map.flyTo({center: coordinates});
+					} else {
+						getWeatherFromObject(result);
+					}
+				});
+			}
+
+			// draw stored weather data for a location when its marker is clicked
+			function addMarkerListener(marker) {
+				marker.getElement().addEventListener("click", function () {
+					let arraysIndex = marker.getElement().getAttribute("data-index");
+					locationName = locationNamesArray[arraysIndex];
+					coordinates = [locationForecastsArray[arraysIndex].lon, locationForecastsArray[arraysIndex].lat];
+					drawForecast(locationForecastsArray[arraysIndex]);
+					currentLocationSpan.text(locationName);
+				});
+			}
+
+			// draw history HTML for locations already searched by the user
+			function drawHistory() {
+				historyDiv.html("");
+				for (let i = locationNamesArray.length - 1; i > -1; i--) {
+					let record = document.createElement("button");
+					record.setAttribute("data-arrayIndex", i.toString());
+					record.setAttribute("class", "btn btn-link dropdown-item");
+					record.innerText = locationNamesArray[i];
+					historyDiv.append(record);
+					record.addEventListener("click", function () {
+						locationName = locationNamesArray[i];
+						coordinates = [locationForecastsArray[i].lon, locationForecastsArray[i].lat];
+						map.flyTo({center: coordinates});
+						drawForecast(locationForecastsArray[i]);
+						currentLocationSpan.text(locationName);
+					});
+				}
+			}
+
+			// create bookmark buttons and add listeners to get weather and add a marker for each bookmarked location
+			function drawBookmarks() {
+				bookmarksDiv.html("");
+				if (bookmarks.length !== 0) {
+					$("#bookmarksDropdown").removeClass("disabled");
+					deleteButton.removeClass("disabled");
+				}
+				bookmarks.forEach(function (bookmark) {
+					let bookmarkButton = document.createElement("button");
+					bookmarkButton.setAttribute("class", "btn btn-link dropdown-item");
+					bookmarkButton.innerText = bookmark.features[0].place_name;
+					bookmarksDiv.append(bookmarkButton);
+					bookmarkButton.addEventListener("click", function () {
+						if (!bookmark.clicked) {
+							bookmark.clicked = true;
+							getWeatherFromObject(bookmark);
+						} else {
+							locationName = bookmark.features[0].place_name;
+							coordinates = bookmark.features[0].center;
+							drawForecast(locationForecastsArray[locationNamesArray.indexOf(locationName)]);
+							currentLocationSpan.text(locationName);
+							map.flyTo({center: coordinates});
+						}
+					});
+				});
+			}
+
+			// create initial home object
+			let home = {features: [{center: [-98.4951, 29.4246], place_name: "San Antonio, Texas, United States"}]}
+			// if user has a home saved in localStorage, use it instead of the initial object
+			if (localStorage.getItem("home") === null) {
+				localStorage.setItem("home", JSON.stringify(home));
+			} else {
+				home = JSON.parse(localStorage.getItem("home"));
+			}
+			$("#home").text(home.features[0].place_name);
+			// create map object for Mapbox API
+			mapboxgl.accessToken = WEATHER_MAP_MAPBOX_KEY;
+			const map = new mapboxgl.Map({
+				container: 'map', // container ID
+				style: 'mapbox://styles/mapbox/streets-v11', // style URL
+				center: home.features[0].center, // starting position [lng, lat]
+				zoom: 10 // starting zoom
+			});
+			// store jQuery objects as variables for easier access
+			let userInput = $("#userInput");
+			let currentLocationSpan = $("#current");
+			let historyDiv = $("#history");
+			let bookmarksDiv = $("#bookmarks");
+			let deleteButton = $("#deleteBookmarks");
+			// declare empty arrays and undefined variables for access in larger scope
+			let locationForecastsArray = [];
+			let locationNamesArray = [];
+			let bookmarks = [];
+			let locationName;
+			let coordinates;
+			// add bookmarks from localStorage to bookmarks array, reset clicked tracker, and draw buttons for each bookmark
+			if (localStorage.getItem("bookmarks") !== null) {
+				bookmarks = JSON.parse(localStorage.getItem("bookmarks"));
+				bookmarks.forEach(function (bookmark) {
+					bookmark.clicked = false;
+				});
+				drawBookmarks();
+			}
+			// get weather for home location
+			getWeatherFromObject(home);
+			// check the user's input if they click the search button
+			$("#searchButton").click(function () {
+				checkUserInput();
+			});
+			// check the user's input if they press enter while typing in the input box
+			userInput.on("keypress", function (e) {
+				if (e.key === "Enter") {
+					checkUserInput();
+				}
+			});
+			// double-clicking a location on the map gets weather data and places a marker for that location
+			map.on("dblclick", function (e) {
+				coordinates = [e.lngLat.lng, e.lngLat.lat];
+				let marker = new mapboxgl.Marker().setLngLat(coordinates).addTo(map);
+				marker.getElement().setAttribute("data-index", locationForecastsArray.length);
+				addMarkerListener(marker);
+				reverseGeocode({
+					lng: coordinates[0],
+					lat: coordinates[1]
+				}, mapboxgl.accessToken).then(function (result) {
+					let names = [];
+					result.features.forEach(function (feature) {
+						switch (feature.place_type[0]) {
+							case "place":
+								names.push(feature.place_name);
+								break;
+							case "district":
+								names.push(feature.place_name);
+								break;
+							case "region":
+								names.push(feature.place_name);
+								break;
+							case "country":
+								names.push(feature.place_name);
+						}
+					});
+					locationName = names[0];
+					if (result.features.length === 0) {
+						locationName = "Unknown Location";
+					}
+					locationNamesArray.push(locationName);
+					currentLocationSpan.text(locationName);
+					let popup = new mapboxgl.Popup().setHTML("<dt>" + locationName + "</dt><dd>Lat: " + coordinates[1].toFixed(3) + "<br>Long: " + coordinates[0].toFixed(3) + "</dd>");
+					marker.setPopup(popup);
+					getWeatherFromCoord(coordinates);
+				});
+			});
+			// adds listener to set home button to set the current location as home in the variable and in localStorage
+			$("#setHome").click(function () {
+				home = {features: [{center: coordinates, place_name: locationName}]}
+				$("#home").text(home.features[0].place_name);
+				localStorage.setItem("home", JSON.stringify(home));
+			});
+			// adds listener to draw weather data for home
+			$("#goHome").click(function () {
+				locationName = home.features[0].place_name;
+				coordinates = home.features[0].center;
+				drawForecast(locationForecastsArray[locationNamesArray.indexOf(locationName)]);
+				currentLocationSpan.text(locationName);
+				map.flyTo({center: coordinates});
+			});
+			// adds listener to add bookmark button to store the current location into localStorage and the bookmarks array
+			$("#addBookmark").click(function () {
+				let bookmarked = false;
+				bookmarks.forEach(function (bookmark) {
+					if (bookmark.features[0].center === coordinates) {
+						bookmarked = true;
+					}
+				})
+				if (!bookmarked) {
+					$("#bookmarksDropdown").removeClass("disabled");
+					bookmarks.push({features: [{center: coordinates, place_name: locationName}], clicked: true});
+					localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+					drawBookmarks();
+				}
+			});
+			// adds listener to delete bookmarks button to delete all bookmarks from localStorage and the bookmarks array
+			deleteButton.on("click", function () {
+				bookmarksDiv.html("");
+				$("#bookmarksDropdown").addClass("disabled");
+				$(this).addClass("disabled");
+				bookmarks.length = 0;
+				localStorage.removeItem("bookmarks");
+			});
+		});
+	</script>
+</body>
+</html>
