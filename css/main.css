@@ -1,0 +1,11 @@
+.hidden {
+	opacity: 0.001;
+}
+
+.project {
+	display: none;
+}
+
+#profilePhoto {
+	width: 200px;
+}

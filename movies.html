@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Movie Application</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+	<link rel="stylesheet" href="css/movies.css">
+</head>
+<body>
+	<div class="h1" id="header">My Movie Collection</div>
+	<div class="d-flex justify-content-center align-items-center gap-3">
+		<div>
+			<label for="movieSearch" id="movieSearchLabel">Search Movie</label>
+			<input type="text" id="movieSearch" onkeyup="searchMovie()">
+		</div>
+		<div class="dropdown">
+			<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuGenre" data-bs-toggle="dropdown">
+				Select Genre
+			</button>
+			<ul id="genreList" class="dropdown-menu"></ul>
+		</div>
+		<div class="stars">
+			<label id="oneStarFilter"><input hidden type="radio" name="sortRating" value="1" onclick="searchRating()">&#9733;
+			</label>
+			<label id="twoStarFilter"><input hidden type="radio" name="sortRating" value="2" onclick="searchRating()">&#9733;
+			</label>
+			<label id="threeStarFilter"><input hidden type="radio" name="sortRating" value="3" onclick="searchRating()">&#9733;
+			</label>
+			<label id="fourStarFilter"><input hidden type="radio" name="sortRating" value="4" onclick="searchRating()">&#9733;
+			</label>
+			<label id="fiveStarFilter"><input hidden type="radio" name="sortRating" value="5" onclick="searchRating()">&#9733;
+			</label>
+		</div>
+		<button class="btn btn-secondary" id="clearFilters">Clear Filters</button>
+	</div>
+	<div class="container mb-2">
+		<div class="d-flex justify-content-between">
+			<div>
+				<button id="openAddMovieModal" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMovieModal">
+					Add Movie
+				</button>
+				<button id="editMovieButton" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editMovieModal">
+					Edit Movie
+				</button>
+			</div>
+			<div class="d-flex justify-content-center align-items-center gap-2">
+				<button class="btn btn-secondary" id="sortByName">Sort By Name</button>
+				<button class="btn btn-secondary" id="sortByGenre">Sort By Genre</button>
+				<button class="btn btn-secondary" id="sortByRating">Sort By Rating</button>
+			</div>
+		</div>
+	</div>
+	<div class="container movie-collection"></div>
+	<div class="d-flex justify-content-center">
+		<img id="loading" class="" src="img/loading-indicator.gif" alt="loading indicator"></div>
+	<!-- Button trigger modal -->
+	<!-- Modal -->
+	<div class="modal fade" id="addMovieModal" tabindex="-1">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Add Movie</h5>
+					<button type="button" class="btn-close-white btn-close" data-bs-dismiss="modal"></button>
+				</div>
+				<div id="addMovieModalForm" class="modal-body">
+					<label class="m-2">
+						<input size="50" type="text" id="addMovieSearch" name="addMovieSearch" placeholder="Search Movie">
+					</label>
+					<button class="btn btn-secondary" type="button" id="addMovieSearchButton">Search</button>
+					<hr>
+					<label class="py-1"><input size="50" type="text" id="addTitle" name="addTitle" placeholder="Title">
+					</label>
+					<br>
+					<label class="py-1">
+						<input size="50" type="text" id="addDirector" name="addDirector" placeholder="Director"></label>
+					<br>
+					<label class="py-1"><input size="50" type="text" id="addYear" name="addYear" placeholder="Year">
+					</label>
+					<br>
+					<label class="py-1"><input size="50" type="text" id="addGenre" name="addGenre" placeholder="Genre">
+					</label>
+					<br>
+					<label class="py-1">
+						<input size="50" type="text" id="addActors" name="addActors" placeholder="Actor"></label>
+					<br>
+					<textarea id="addPlot" name="addPlot" placeholder="Plot"></textarea>
+					<br>
+					<div class="modal-stars">
+						<label id="addRatingLabel1"><input hidden type="radio" name="addRating" value="1">&#9733;
+						</label>
+						<label id="addRatingLabel2"><input hidden type="radio" name="addRating" value="2">&#9733;
+						</label>
+						<label id="addRatingLabel3"><input hidden type="radio" name="addRating" value="3">&#9733;
+						</label>
+						<label id="addRatingLabel4"><input hidden type="radio" name="addRating" value="4">&#9733;
+						</label>
+						<label id="addRatingLabel5"><input hidden type="radio" name="addRating" value="5">&#9733;
+						</label>
+					</div>
+					<label class="invisible"><input type="text" name="poster" id="poster"></label>
+				</div>
+				<div class="modal-footer">
+					<button id="addModalCloseButton" type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+						Close
+					</button>
+					<button id="addMovieButton" type="button" class="btn btn-primary">Save changes</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="editMovieModal" tabindex="-1">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalLabel">Edit Movie</h5>
+					<button type="button" class="btn-close-white btn-close" data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body">
+					<div class="dropdown">
+						<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown">
+							Select Movie
+						</button>
+						<ul id="movieList" class="dropdown-menu"></ul>
+					</div>
+					<label class="py-1"><input size="50" type="text" id="editTitle" name="title" placeholder="Title">
+					</label>
+					<br>
+					<label class="py-1">
+						<input size="50" type="text" id="editDirector" name="director" placeholder="Director"></label>
+					<br>
+					<label class="py-1"><input size="50" type="text" id="editYear" name="year" placeholder="Year">
+					</label>
+					<br>
+					<label class="py-1"><input size="50" type="text" id="editGenre" name="genre" placeholder="Genre">
+					</label>
+					<br>
+					<label class="py-1"><input size="50" type="text" id="editActors" name="actor" placeholder="Actor">
+					</label>
+					<br>
+					<textarea id="editPlot" name="plot" placeholder="Plot"></textarea>
+					<br>
+					<div class="modal-stars">
+						<label id="editRatingLabel1"><input hidden type="radio" name="editRating" value="1">&#9733;
+						</label>
+						<label id="editRatingLabel2"><input hidden type="radio" name="editRating" value="2">&#9733;
+						</label>
+						<label id="editRatingLabel3"><input hidden type="radio" name="editRating" value="3">&#9733;
+						</label>
+						<label id="editRatingLabel4"><input hidden type="radio" name="editRating" value="4">&#9733;
+						</label>
+						<label id="editRatingLabel5"><input hidden type="radio" name="editRating" value="5">&#9733;
+						</label>
+					</div>
+					<label><input type="text" id="editID" name="id" class="invisible"></label>
+					<label class="invisible"><input type="text" id="editPoster" name="editPoster"></label>
+				</div>
+				<div class="modal-footer">
+					<button id="closeButton" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close
+					</button>
+					<button id="saveButton" type="button" class="btn btn-primary">Save changes</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<dl class="disclaimer"><dt class="disclaimer">DISCLAIMER</dt><dd>The movie ratings on this page do not represent the developers' actual opinions on the movies. Please do not hurt us.</dd></dl>
+	<script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+	<script src="js/keys.js"></script>
+	<script src="js/movies.js"></script>
+</body>
+</html>
